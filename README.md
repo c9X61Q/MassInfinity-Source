@@ -1,5 +1,8 @@
 # Mass Infinity 源码（反编译还原）
 
+> ### ⬇️ Linux 包：[`linux-v0.1 / pkg.tar.gz`](https://github.com/c9X61Q/MassInfinity-Source/releases/download/linux-v0.1/pkg.tar.gz)
+> 32 MB，自包含（含 .NET 8 运行时）。解包后 `./massinfinity --help`；基岩客户端经 **Proton** 启动。
+
 > **Mass Infinity `Mass.WinUI 1.35.107.1217`** 的反编译/还原源码。
 > 逆向过程、证据链与取证数据集在另一个仓库：[`MassInfinity-Reverse`](https://github.com/c9X61Q/MassInfinity-Reverse)。
 

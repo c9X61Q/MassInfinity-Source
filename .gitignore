@@ -1,2 +1,5 @@
 bin/
 obj/
+pkg/
+pkg.tar.gz
+dist/
