@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>MassInfinity.Linux</RootNamespace>
+    <RollForward>LatestMajor</RollForward>
+    <AssemblyName>massinfinity</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../MassInfinity.Rewrite/MassInfinity.Rewrite.csproj" />
+    <ProjectReference Include="../MassInfinity.Rewrite.Generated/MassInfinity.Rewrite.Generated.csproj" />
+  </ItemGroup>
+</Project>
