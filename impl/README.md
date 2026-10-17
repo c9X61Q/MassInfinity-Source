@@ -69,6 +69,31 @@ cd impl/MassInfinity.Rewrite.SelfTest && dotnet run     # 33 项，全部 PASS
 - 保真度：**3,193 个属性中 344 个（10.8%）因原类型未生成而保守降级为 `object`**，已在生成文件注释里保留原类型全名
 - ⚠️ 该层**只含属性与枚举**，**不含方法体**（混淆名方法无语义可写，见下）
 
+## 第四增量：Linux 启动器（`impl/MassInfinity.Linux/`）
+
+**设计原则：最小改动** —— Windows 专有的东西**只换成 Linux 等价物**，其余不动。
+
+| # | Windows 侧 | Linux 侧等价物 |
+|---|---|---|
+| ① | 直接 `Process.Start(游戏exe)` | **经 Proton 起同一个 exe**（`proton run <exe>` + `WINEPREFIX` / `STEAM_COMPAT_*`） |
+| ② | 配置里的 `Path` 是 Windows 路径 | Linux 绝对路径 → **Proton/Wine 视角的 `Z:\...`** |
+| ③ | 服务通信（本地 HTTP + SignalR） | **不变**（跨平台） |
+| ④ | 启动配置结构 | **不变**，直接复用「生成 DTO 层」（字段来自元数据） |
+
+```bash
+cd impl/MassInfinity.Linux && dotnet build        # 0 错误
+massinfinity proton                               # 探测 Proton + 路径换算
+massinfinity launch --game-exe <基岩客户端.exe> --dry-run    # 只打印要执行的命令
+massinfinity ping | login163 --email E --password P | list    # 走重写层的协议客户端
+```
+
+Proton 探测顺序：`$PROTON` / `$PROTON_PATH` → `~/.steam/steam`、`~/.local/share/Steam`、
+Flatpak 的 `~/.var/app/com.valvesoftware.Steam/...`、`/usr/share/steam` 下的 `Proton*`。
+
+> ⚠️ **未发明**：基岩客户端的**真实 CLI 形参**在受保护方法体里，元数据看不到。
+> 所以命令行做成 `--game-args` 模板可配（`{config}` 会被替换为配置路径），
+> 默认按「传入配置路径」处理并**明确标注未验证**。
+
 ## 不覆盖什么
 
 - 协议背后的**服务端**行为（那是 Mass 服务本身，不在本仓库范围）。
