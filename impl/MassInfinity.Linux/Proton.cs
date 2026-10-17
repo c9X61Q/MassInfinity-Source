@@ -95,5 +95,10 @@ public sealed class ProtonRunner
         return proc.ExitCode;
     }
 
-    public static string Quote(string s) => s.Contains(' ') || s.Contains('"') ? "\"" + s.Replace("\"", "\\\"") + "\"" : s;
+    // 仅用于显示：已自带引号的参数不再二次包裹
+    public static string Quote(string s)
+    {
+        if (s.Contains('"')) return s;
+        return s.Contains(' ') ? "\"" + s + "\"" : s;
+    }
 }

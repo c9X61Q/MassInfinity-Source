@@ -90,9 +90,24 @@ massinfinity ping | login163 --email E --password P | list    # 走重写层的�
 Proton 探测顺序：`$PROTON` / `$PROTON_PATH` → `~/.steam/steam`、`~/.local/share/Steam`、
 Flatpak 的 `~/.var/app/com.valvesoftware.Steam/...`、`/usr/share/steam` 下的 `Proton*`。
 
-> ⚠️ **未发明**：基岩客户端的**真实 CLI 形参**在受保护方法体里，元数据看不到。
-> 所以命令行做成 `--game-args` 模板可配（`{config}` 会被替换为配置路径），
-> 默认按「传入配置路径」处理并**明确标注未验证**。
+### 与 fantnel（涅槃科技）对齐的三件事
+
+原先「基岩客户端 CLI 形参未知」这一项已通过参考
+[`fengheng1111/fantnel`](https://github.com/fengheng1111/fantnel) 的
+`Nirvana.Game.Launcher/Services/Bedrock/` 补齐，**不再是猜测**：
+
+| 事实 | 值 | 出处 |
+|---|---|---|
+| 客户端 CLI 形参 | ` config="<配置路径>"` | `Bedrock/CommandService.StartGame` |
+| 配置序列化 | **snake_case**（`room_info` / `player_info` / `skin_info` / `misc`） | `Bedrock/ConfigService.GenerateLaunchConfig` |
+| 配置文件名 | `launch.cppconfig` | 同上 |
+| 安装布局 | `<游戏目录>/windowsmc/Minecraft.Windows.exe` | `Bedrock/LauncherService.GetLaunchPath` |
+
+> 📌 **本层相对 fantnel 的增量**：fantnel 的基岩路径是直接 `Process.Start` Windows exe
+> （即依赖系统 binfmt/wine，不含 Proton 处理）；本层把它换成**显式经 Proton 启动**，
+> 并补上 `WINEPREFIX` / `STEAM_COMPAT_*` 与 Linux→`Z:\` 路径换算。
+
+`--game-args` 仍可覆盖（`{config}` 占位）。
 
 ## 不覆盖什么
 

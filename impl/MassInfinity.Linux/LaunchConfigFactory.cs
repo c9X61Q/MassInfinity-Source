@@ -78,8 +78,10 @@ public static class LaunchConfigFactory
         };
     }
 
-    // 配置里的键名沿用原结构（PascalCase），故不用 snake_case
-    public static readonly JsonSerializerOptions Json = new()
+    // ✅ 键名规则已对齐：客户端读的是 **snake_case**（room_info / player_info / skin_info / misc）。
+    //    依据：fantnel(涅槃科技) Nirvana.Game.Launcher/Services/Bedrock/ConfigService.cs 生成的 launch.cppconfig。
+    //    直接复用重写层的 MassJson.Options（同一套 snake_case 规则），只加缩进与中文直写。
+    public static readonly JsonSerializerOptions Json = new(MassInfinity.Rewrite.Protocol.MassJson.Options)
     {
         WriteIndented = true,
         Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,   // 中文直写，不转义成 \uXXXX

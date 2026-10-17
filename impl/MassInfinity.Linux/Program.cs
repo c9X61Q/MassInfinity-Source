@@ -71,9 +71,9 @@ static int RunLaunch(Dictionary<string, string> opt)
 
     var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
     var prefix = opt.GetValueOrDefault("prefix") ?? Path.Combine(home, ".local/share/massinfinity/prefix");
-    var gameExe = opt.GetValueOrDefault("game-exe");
-    if (string.IsNullOrEmpty(gameExe)) { Console.Error.WriteLine("需要 --game-exe <基岩客户端 exe 路径>"); return 2; }
-    var gameDir = opt.GetValueOrDefault("game-dir") ?? Path.GetDirectoryName(Path.GetFullPath(gameExe));
+    var gameDir = opt.GetValueOrDefault("game-dir") ?? Path.Combine(home, ".local/share/massinfinity/cppgame");
+    // 安装布局对齐 fantnel：<游戏目录>/windowsmc/Minecraft.Windows.exe
+    var gameExe = opt.GetValueOrDefault("game-exe") ?? Path.Combine(gameDir, "windowsmc", "Minecraft.Windows.exe");
 
     var req = new LaunchRequest
     {
@@ -108,17 +108,19 @@ static int RunLaunch(Dictionary<string, string> opt)
 
     var cfg = LaunchConfigFactory.Build(req, ProtonRunner.ToWindowsPath);
     var json = LaunchConfigFactory.ToJson(cfg);
-    var cfgOut = opt.GetValueOrDefault("config-out") ?? Path.Combine(prefix, "launch_config.json");
+    var cfgOut = opt.GetValueOrDefault("config-out") ?? Path.Combine(gameDir, "launch.cppconfig");   // 文件名对齐 fantnel
     Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(cfgOut))!);
     File.WriteAllText(cfgOut, json);
     Console.WriteLine($"已写出启动配置：{cfgOut}（{json.Length} 字节）");
 
+    // ✅ CLI 形参已对齐：` config="<路径>"`（依据 fantnel CommandService.StartGame）。
+    //    --game-args 仍可覆盖，{config} 会被替换为配置路径。
     var gameArgs = new List<string>();
     var template = opt.GetValueOrDefault("game-args");
     if (!string.IsNullOrEmpty(template))
         gameArgs.AddRange(template.Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(a => a.Replace("{config}", ProtonRunner.ToWindowsPath(cfgOut))));
     else
-        gameArgs.Add(ProtonRunner.ToWindowsPath(cfgOut));   // ⚠️ 客户端真实 CLI 形参未知，默认按「配置路径」传入
+        gameArgs.Add($"config=\"{ProtonRunner.ToWindowsPath(cfgOut)}\"");
 
     var rc = runner.Run(gameExe, gameArgs);
     if (!runner.DryRun) Console.WriteLine($"游戏退出码：{rc}");
