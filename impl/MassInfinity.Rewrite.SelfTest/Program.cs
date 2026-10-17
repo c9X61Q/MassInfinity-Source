@@ -85,6 +85,48 @@ Console.WriteLine("== 协议信封 ==");
     Check("snake_case 信封解码", env is { Code: 0 } && env.Data!.UserId == "u1" && env.Data.Info.Type == AccountType.Netease163);
 }
 
+Console.WriteLine("== 生成 DTO 层全量往返（反射遍历）==");
+{
+    var asm = typeof(MassInfinity.Rewrite.Generated.Mass_Domain.GGEN.G_Mass_Domain_Mass_Domain_Value_BoolValue).Assembly;
+    var opts = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+    int types = 0, props = 0, okTypes = 0, failTypes = 0;
+    var failures = new List<string>();
+    foreach (var t in asm.GetTypes())
+    {
+        if (!t.IsClass || t.IsAbstract) continue;
+        var ps = t.GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+        if (ps.Length == 0) continue;
+        types++;
+        try
+        {
+            var inst = Activator.CreateInstance(t);
+            foreach (var p in ps)
+            {
+                props++;
+                if (p.CanWrite) p.SetValue(inst, DefaultOf(p.PropertyType));
+            }
+            var j = JsonSerializer.Serialize(inst, opts);
+            var rt = JsonSerializer.Deserialize(j, t, opts);
+            var j2 = JsonSerializer.Serialize(rt, opts);
+            if (j == j2) okTypes++; else { failTypes++; failures.Add(t.Name); }
+        }
+        catch (Exception ex) { failTypes++; failures.Add(t.Name + ": " + ex.GetType().Name); }
+    }
+    Check($"遍历到 {types} 个生成类 / {props} 个属性", types > 700, types.ToString());
+    Check($"全部往返一致（{okTypes}/{types}）", failTypes == 0, failures.Count > 0 ? string.Join("; ", failures.Take(3)) : null);
+}
+
+#nullable disable
+static object DefaultOf(Type t)
+{
+    if (t == typeof(string)) return "";
+    if (t.IsValueType) return Activator.CreateInstance(t);
+    if (t.IsArray) return Array.CreateInstance(t.GetElementType()!, 0);
+    if (t.IsGenericType && t.GetGenericTypeDefinition() == typeof(List<>)) return Activator.CreateInstance(t);
+    if (t.IsGenericType && t.GetGenericTypeDefinition() == typeof(Dictionary<,>)) return Activator.CreateInstance(t);
+    return null;
+}
+
 Console.WriteLine();
 Console.WriteLine(failed == 0 ? "全部通过" : $"{failed} 项失败");
 return failed == 0 ? 0 : 1;

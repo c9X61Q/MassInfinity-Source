@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <NoWarn>CS0101;CS0102;CS0111;CS0305;CS0649;CS0169;CS8981</NoWarn>
+  </PropertyGroup>
+  <ItemGroup><Compile Include="*.g.cs" /></ItemGroup>
+</Project>

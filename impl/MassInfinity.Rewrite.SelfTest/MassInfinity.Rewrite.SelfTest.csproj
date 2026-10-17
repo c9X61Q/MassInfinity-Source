@@ -9,5 +9,6 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../MassInfinity.Rewrite/MassInfinity.Rewrite.csproj" />
+    <ProjectReference Include="../MassInfinity.Rewrite.Generated/MassInfinity.Rewrite.Generated.csproj" />
   </ItemGroup>
 </Project>

@@ -45,13 +45,29 @@ var back  = LoginPacket.Decode(bytes).ReadClientPayload();   // 取回 ClientPay
 ### 自检
 
 ```bash
-cd impl/MassInfinity.Rewrite.SelfTest && dotnet run     # 31 项，全部 PASS
+cd impl/MassInfinity.Rewrite.SelfTest && dotnet run     # 33 项，全部 PASS
 ```
 
 覆盖：VarInt 边界（`0`/`127`/`128`/`ulong.MaxValue`/`long.MinValue`…）、定长与字符串、
-41 字段 JSON 往返、LoginPacket 帧往返、**zlib+JWT 全链路**取回、协议信封 snake_case 解码。
+41 字段 JSON 往返、LoginPacket 帧往返、**zlib+JWT 全链路**取回、协议信封 snake_case 解码、
+以及**生成 DTO 层的全量反射往返**（720 个类 / 3,193 个属性，逐个 JSON 往返一致）。
 
 > ⚠️ 自检测的是「**本实现自洽**」，不是与原始客户端的行为等价性 —— 后者无法验证（原始方法体不存在）。
+
+## 第三增量：生成 DTO 层（`impl/MassInfinity.Rewrite.Generated/`）
+
+**为什么这层可以"机械确定"**：属性访问器（`get_`/`set_`）的方法体**由编译器生成** —— 元数据里的
+属性声明就完全决定了语义，不需要反编译。所以这层是**按构造正确**，不是猜。
+
+```
+780 个类型/枚举 → 3,193 个属性 → 11,959 行
+覆盖 11 个程序集的**全部属性面**（Mass.Domain / Mass.Game.Proxy / Mass.WinUI / Mass.Bedrock.Proxy …）
+```
+
+- 生成器：过程仓库 `tools/MassDtoGen`（dnlib 读元数据，可复现）
+- 枚举值取自 `Constant` 表；容器类型按泛型元数映射（`List<>` / `Dictionary<>` / `HashSet<>` / `Queue<>` / `Stack<>` / `Nullable`…）
+- 保真度：**3,193 个属性中 344 个（10.8%）因原类型未生成而保守降级为 `object`**，已在生成文件注释里保留原类型全名
+- ⚠️ 该层**只含属性与枚举**，**不含方法体**（混淆名方法无语义可写，见下）
 
 ## 不覆盖什么
 
