@@ -24,6 +24,35 @@
 
 线协议细节（已按契约对齐）：**snake_case JSON**；统一信封 `{ code, msg, data }`，`code != 0` 抛 `MassApiException`。
 
+## 第二增量：Bedrock 包层（`Bedrock/`）
+
+`Mass.Bedrock.Proxy.ClientPayload` 是 **MC Bedrock `LoginPacket` 皮肤 JWT 里的 client payload**：
+字段名与顺序取自反编译元数据的**声明**（41 个字段），结构与公开的 Bedrock 协议规范一致 —— 有契约可依，故可直接实现。
+
+| 文件 | 内容 |
+|---|---|
+| `Bedrock/VarInt.cs` | 无符号 LEB128 + 有符号 zigzag 变长整数 |
+| `Bedrock/BedrockBinary.cs` | 读写原语（i32 大端 / i64 小端 / bool / VarInt 长字符串） |
+| `Bedrock/ClientPayload.cs` | 41 字段 + `DeviceOs` / `AnimatedImageData` / `PersonaPiece` / `PieceTintColor`（JSON 为 **PascalCase**，即 Bedrock 皮肤 JWT 的真实规则） |
+| `Bedrock/LoginPacket.cs` | 帧结构 `i32(BE) protocol_version` + `string connection_request` + `string skin_data`；JWT 拆装 + 皮肤负载 **zlib** 解压/压缩 |
+
+```csharp
+var login = new LoginPacket { ProtocolVersion = 671 }.WithClientPayload(payload);
+var bytes = login.Encode();                    // 发出去的帧
+var back  = LoginPacket.Decode(bytes).ReadClientPayload();   // 取回 ClientPayload
+```
+
+### 自检
+
+```bash
+cd impl/MassInfinity.Rewrite.SelfTest && dotnet run     # 31 项，全部 PASS
+```
+
+覆盖：VarInt 边界（`0`/`127`/`128`/`ulong.MaxValue`/`long.MinValue`…）、定长与字符串、
+41 字段 JSON 往返、LoginPacket 帧往返、**zlib+JWT 全链路**取回、协议信封 snake_case 解码。
+
+> ⚠️ 自检测的是「**本实现自洽**」，不是与原始客户端的行为等价性 —— 后者无法验证（原始方法体不存在）。
+
 ## 不覆盖什么
 
 - 协议背后的**服务端**行为（那是 Mass 服务本身，不在本仓库范围）。
