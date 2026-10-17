@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <NoWarn>CS0169;CS0649;CS0067;CS0108;CS0114;CS0162;CS0168;CS0219;CS0414;CS8632;CS0101;CS0102;CS0111;CS0305;CS0465;CS0693;CS0626;CS8981</NoWarn>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <WindowsSdkPackageVersion>10.0.19041.38</WindowsSdkPackageVersion>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <!-- 骨架只引用现成投影，不从 winmd 生成投影；cswinrt.exe 是 Windows 二进制，Linux 上跑不了 -->
+    <CsWinRTGenerateProjection>false</CsWinRTGenerateProjection>
+    <CsWinRTEnabled>false</CsWinRTEnabled>
+    <WindowsAppSdkGenerateProjection>false</WindowsAppSdkGenerateProjection>
+    <WindowsAppSDKCsWinRTEnabled>false</WindowsAppSDKCsWinRTEnabled>
+    <!-- 骨架无资源/无 XAML：关闭 PRI 生成（MakePri.exe 也是 Windows 二进制） -->
+    <EnableMsixTooling>false</EnableMsixTooling>
+    <EnableCoreMrtTooling>false</EnableCoreMrtTooling>
+    <GeneratePriFile>false</GeneratePriFile>
+    <MrtCoreGeneratePriFile>false</MrtCoreGeneratePriFile>
+    <WindowsAppSDKUndockedRegFreeWinRTInitialize>false</WindowsAppSDKUndockedRegFreeWinRTInitialize>
+  </PropertyGroup>
+  <!-- 依赖清单来自 REA 读 Mass.WinUI.dll 的 AssemblyRef（58/58 全量） -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.250907003" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="3.0.1" />
+    <PackageReference Include="FluentIcons.WinUI" Version="2.0.318" />
+    <PackageReference Include="WinUI.TableView" Version="1.4.0" />
+    <PackageReference Include="DevWinUI" Version="9.9.3" />
+    <PackageReference Include="QRCoder" Version="1.7.0" />
+    <PackageReference Include="Serilog" Version="4.3.0" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3405.78" />
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.2.0" />
+    <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.1.240916" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../NonWinUI.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="../out/Mass.WinUI.cs" />
+    <Compile Include="../shims/*.cs" />
+  </ItemGroup>
+</Project>
